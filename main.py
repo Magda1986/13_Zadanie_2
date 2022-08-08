@@ -4,27 +4,32 @@ import sqlalchemy
 import csv
 
 # zgodnie ze skryptem importujemy koljne moduły z sqlalchemy
-from sqlalchemy import Table, Column, Integer, String, MetaData, Float
+from sqlalchemy import Table, Column, Integer, String, MetaData, Float, Date
 from sqlalchemy import create_engine
 # Import modułu obsługującego datę 
-from datetime import date
+#from datetime import date
 
 engine = create_engine("sqlite:///database.db", echo=True)
 meta = MetaData()
 
-#tworzymy funkcję odpowiedzialną odczyt plików CSV
+#tworzymy funkcję odpowiedzialną za odczyt plików CSV
 def load_items_csv(csvfile):
     datas = []
     with open(csvfile, newline="") as csvfile:
-        reader = csv.reader(csvfile, delimiter= ",")
+        reader = csv.DictReader(csvfile)
         for row in reader:
             datas.append(row)
-            return datas
+    return datas
 
 stations_datas = load_items_csv("clean_stations.csv")
 measure_datas = load_items_csv("clean_measure.csv")
+print(stations_datas)
+print(measure_datas)
+print(engine)
 
-# definiujemy tabelę clean_stations
+
+
+#definiujemy tabelę clean_stations
 stations = Table(
     "stations",
     meta,
@@ -34,17 +39,21 @@ stations = Table(
     Column("elevation", Float),
     Column("name", String),
     Column("country", String),
-    Column("state", String)
+    Column("state", String),
 )
 
-# definiujemy tabelę clean_measure
+#definiujemy tabelę clean_measure
 measure = Table(
     "measure", meta,
     Column("station", String),
-    Column("date", date),
+    Column("date", Date),
     Column("precip", Float),
-    Column("tobs", Integer)
+    Column("tobs", Integer),
 )
+
+meta.create_all(engine)
+#print(engine.table_names())
+
 
 stations_datas_to_insert = stations.insert().values(stations_datas)
 measure_datas_to_insert = measure.insert().values(measure_datas)
