@@ -7,7 +7,7 @@ import csv
 from sqlalchemy import Table, Column, Integer, String, MetaData, Float, Date
 from sqlalchemy import create_engine
 # Import modułu obsługującego datę 
-#from datetime import date
+from datetime import date 
 
 engine = create_engine("sqlite:///database.db", echo=True)
 meta = MetaData()
@@ -23,6 +23,10 @@ def load_items_csv(csvfile):
 
 stations_datas = load_items_csv("clean_stations.csv")
 measure_datas = load_items_csv("clean_measure.csv")
+
+for m in measure_datas:
+    m['date'] = date.fromisoformat(m['date'])
+
 print(stations_datas)
 print(measure_datas)
 print(engine)
@@ -50,9 +54,6 @@ measure = Table(
     Column("precip", Float),
     Column("tobs", Integer),
 )
-
-meta.create_all(engine)
-#print(engine.table_names())
 
 
 stations_datas_to_insert = stations.insert().values(stations_datas)
